@@ -1,0 +1,36 @@
+<%- include('partials-header', { title: 'Projects' }) %>
+<div class="topline">
+  <div>
+    <h1>Shared Projects</h1>
+    <p>One workspace for the team. Admin-created projects are visible to every active teammate.</p>
+  </div>
+</div>
+<section class="grid">
+  <% projects.forEach(project => { %>
+    <a class="card project-card" href="/projects/<%= project.id %>">
+      <h2><%= project.name %></h2>
+      <p><%= project.description || 'No description' %></p>
+      <div class="meta-row">
+        <span class="pill"><%= project.status %></span>
+        <span class="pill"><%= project.priority %></span>
+      </div>
+      <small><%= project.taskCount %> tasks • <%= project.openCount %> open • Owner: <%= project.ownerName %></small>
+    </a>
+  <% }) %>
+</section>
+<% if (isAdmin) { %>
+  <section class="card form-card">
+    <h2>Create project</h2>
+    <form method="post" action="/projects">
+      <label>Project name<input name="name" required></label>
+      <label>Description<textarea name="description" rows="3"></textarea></label>
+      <button>Create shared project</button>
+    </form>
+  </section>
+<% } else { %>
+  <section class="card muted-card">
+    <strong>Shared workspace mode</strong>
+    <p>Team members can add tasks and notes inside shared projects. Only admins can create or edit projects.</p>
+  </section>
+<% } %>
+<%- include('partials-footer') %>
