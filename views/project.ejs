@@ -59,6 +59,21 @@
                   </select>
                 </form>
               </div>
+              <details class="edit-task">
+                <summary>Edit task</summary>
+                <form method="post" action="/tasks/<%= task.id %>/update">
+                  <label>Title<input name="title" value="<%= task.title %>" required></label>
+                  <label>Details<textarea name="description" rows="3"><%= task.description || '' %></textarea></label>
+                  <div class="task-edit-grid">
+                    <label>Status<select name="status"><option value="backlog" <%= task.status==='backlog'?'selected':'' %>>Backlog</option><option value="progress" <%= task.status==='progress'?'selected':'' %>>In Progress</option><option value="done" <%= task.status==='done'?'selected':'' %>>Done</option></select></label>
+                    <label>Priority<select name="priority"><option value="low" <%= task.priority==='low'?'selected':'' %>>Low</option><option value="medium" <%= task.priority==='medium'?'selected':'' %>>Medium</option><option value="high" <%= task.priority==='high'?'selected':'' %>>High</option><option value="critical" <%= task.priority==='critical'?'selected':'' %>>Critical</option></select></label>
+                    <label>Assignee<select name="assigneeId"><option value="" <%= !task.assigneeId?'selected':'' %>>Unassigned</option><% users.forEach(user => { %><option value="<%= user.id %>" <%= task.assigneeId===user.id?'selected':'' %>><%= user.name %></option><% }) %></select></label>
+                    <label>Estimate<input name="estimatePoints" value="<%= task.estimatePoints || '' %>"></label>
+                  </div>
+                  <label>Labels<input name="labels" value="<%= task.labels ? task.labels.join(', ') : '' %>"></label>
+                  <button class="small">Save task</button>
+                </form>
+              </details>
               <form class="time-form" method="post" action="/tasks/<%= task.id %>/time">
                 <input type="number" min="1" name="minutes" placeholder="Minutes">
                 <input name="note" placeholder="Work note">
@@ -150,3 +165,4 @@
   <% }) %>
 </section>
 <%- include('partials-footer') %>
+

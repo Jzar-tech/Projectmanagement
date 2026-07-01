@@ -70,6 +70,7 @@ function ensureTaskDefaults(task) {
   task.assigneeId ??= '';
   task.labels = Array.isArray(task.labels) ? task.labels : [];
   task.estimatePoints ??= '';
+  task.timeSpentMinutes ??= 0;
   task.updatedAt ??= task.createdAt || now();
 }
 
@@ -78,6 +79,8 @@ async function migrateDb() {
   db.projects ||= [];
   db.tasks ||= [];
   db.notes ||= [];
+
+  db.timeLogs ||= [];
 
   let changed = false;
 
@@ -180,7 +183,10 @@ function enrichTask(task) {
   return {
     ...task,
     author: getUserName(task.createdBy),
-    assigneeName: getUserName(task.assigneeId)
+    assigneeName: getUserName(task.assigneeId),
+    timeLogs: db.timeLogs
+      .filter(log => log.taskId === task.id)
+      .map(log => ({ ...log, author: getUserName(log.createdBy) }))
   };
 }
 
@@ -476,6 +482,33 @@ app.post('/tasks/:taskId/status', requireAuth, async (req, res) => {
   res.redirect(`/projects/${task.projectId}`);
 });
 
+app.post('/tasks/:taskId/update', requireAuth, async (req, res) => {
+  const task = db.tasks.find(item => item.id === req.params.taskId);
+  if (!task || !projectForUser(task.projectId, currentUser(req))) {
+    return res.status(404).send('Task not found');
+  }
+
+  const nextAssigneeId = String(req.body.assigneeId || '');
+  if (nextAssigneeId && !activeUsers().some(user => user.id === nextAssigneeId)) {
+    return res.status(400).send('Invalid assignee');
+  }
+
+  task.title = String(req.body.title || '').trim() || task.title;
+  task.description = String(req.body.description || '').trim();
+  task.status = ['backlog', 'progress', 'done'].includes(req.body.status) ? req.body.status : task.status;
+  task.priority = ['low', 'medium', 'high', 'critical'].includes(req.body.priority) ? req.body.priority : task.priority;
+  task.assigneeId = nextAssigneeId;
+  task.labels = String(req.body.labels || '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+  task.estimatePoints = String(req.body.estimatePoints || '');
+  task.updatedAt = now();
+
+  await saveDb();
+  res.redirect(`/projects/${task.projectId}#task-${task.id}`);
+});
+
 app.post('/tasks/:taskId/assignee', requireAuth, async (req, res) => {
   const task = db.tasks.find(item => item.id === req.params.taskId);
   if (!task || !projectForUser(task.projectId, currentUser(req))) {
@@ -594,4 +627,6 @@ loadDb()
     console.error(error);
     process.exit(1);
   });
+
+
 
