@@ -14,7 +14,7 @@
         <span class="pill"><%= project.status %></span>
         <span class="pill"><%= project.priority %></span>
       </div>
-      <small><%= project.taskCount %> tasks • <%= project.openCount %> open • Owner: <%= project.ownerName %></small>
+      <small><%= project.taskCount %> tasks - <%= project.openCount %> open - Owner: <%= project.ownerName %></small>
     </a>
   <% }) %>
 </section>
@@ -34,3 +34,4 @@
   </section>
 <% } %>
 <%- include('partials-footer') %>
+

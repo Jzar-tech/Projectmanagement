@@ -1,136 +1,138 @@
 <%- include('partials-header', { title: project.name }) %>
-<p><a href="/projects">Back to projects</a></p>
-<div class="project-hero">
-  <div>
-    <h1><%= project.name %></h1>
-    <p><%= project.description || 'No description provided.' %></p>
-  </div>
-  <div class="hero-stats">
-    <div><span>Status</span><strong><%= project.status %></strong></div>
-    <div><span>Priority</span><strong><%= project.priority %></strong></div>
-    <div><span>Progress</span><strong><%= project.progress %>%</strong></div>
-  </div>
-</div>
-<section class="card meta-card">
-  <div class="meta-grid">
-    <div><span>Owner</span><strong><%= project.ownerName %></strong></div>
-    <div><span>Assignee</span><strong><%= project.assigneeName %></strong></div>
-    <div><span>Milestone</span><strong><%= project.milestone || 'None' %></strong></div>
-    <div><span>Estimate</span><strong><%= project.estimatePoints || '-' %></strong></div>
-    <div><span>Start date</span><strong><%= project.startDate || '-' %></strong></div>
-    <div><span>Due date</span><strong><%= project.dueDate || '-' %></strong></div>
-    <div class="wide"><span>Labels</span><strong><%= project.labels && project.labels.length ? project.labels.join(', ') : 'None' %></strong></div>
-    <div class="wide"><span>Blocked reason</span><strong><%= project.blockedReason || 'None' %></strong></div>
-  </div>
-</section>
-<% if (isAdmin) { %>
-  <section class="card form-card admin-card">
-    <h2>Admin project settings</h2>
-    <form method="post" action="/projects/<%= project.id %>/update">
-      <label>Project name<input name="name" value="<%= project.name %>" required></label>
-      <label>Description<textarea name="description" rows="3"><%= project.description %></textarea></label>
-      <div class="form-grid">
-        <label>Status
-          <select name="status">
-            <option value="planning" <%= project.status==='planning'?'selected':'' %>>Planning</option>
-            <option value="active" <%= project.status==='active'?'selected':'' %>>Active</option>
-            <option value="blocked" <%= project.status==='blocked'?'selected':'' %>>Blocked</option>
-            <option value="done" <%= project.status==='done'?'selected':'' %>>Done</option>
-          </select>
-        </label>
-        <label>Priority
-          <select name="priority">
-            <option value="low" <%= project.priority==='low'?'selected':'' %>>Low</option>
-            <option value="medium" <%= project.priority==='medium'?'selected':'' %>>Medium</option>
-            <option value="high" <%= project.priority==='high'?'selected':'' %>>High</option>
-            <option value="critical" <%= project.priority==='critical'?'selected':'' %>>Critical</option>
-          </select>
-        </label>
-        <label>Owner
-          <select name="ownerId">
-            <% users.forEach(user => { %>
-              <option value="<%= user.id %>" <%= project.ownerId===user.id?'selected':'' %>><%= user.name %></option>
-            <% }) %>
-          </select>
-        </label>
-        <label>Assignee
-          <select name="assigneeId">
-            <% users.forEach(user => { %>
-              <option value="<%= user.id %>" <%= project.assigneeId===user.id?'selected':'' %>><%= user.name %></option>
-            <% }) %>
-          </select>
-        </label>
-        <label>Labels<input name="labels" value="<%= project.labels ? project.labels.join(', ') : '' %>" placeholder="jira, urgent"></label>
-        <label>Milestone<input name="milestone" value="<%= project.milestone || '' %>"></label>
-        <label>Estimate points<input name="estimatePoints" value="<%= project.estimatePoints || '' %>"></label>
-        <label>Start date<input type="date" name="startDate" value="<%= project.startDate || '' %>"></label>
-        <label>Due date<input type="date" name="dueDate" value="<%= project.dueDate || '' %>"></label>
-        <label>Progress<input type="number" min="0" max="100" name="progress" value="<%= project.progress || 0 %>"></label>
-        <label class="wide">Blocked reason<textarea name="blockedReason" rows="2"><%= project.blockedReason || '' %></textarea></label>
-      </div>
-      <button>Save project</button>
-    </form>
-    <form method="post" action="/projects/<%= project.id %>/delete" onsubmit="return confirm('Delete this project, its tasks, and notes?')">
-      <button class="danger">Delete project</button>
-    </form>
-  </section>
-<% } %>
-<section class="card form-card">
-  <h2>Add task</h2>
-  <form method="post" action="/projects/<%= project.id %>/tasks">
-    <div class="form-grid">
-      <input name="title" placeholder="Task title" required>
-      <input name="description" placeholder="Short details">
-      <select name="priority">
-        <option value="low">Low</option>
-        <option value="medium" selected>Medium</option>
-        <option value="high">High</option>
-        <option value="critical">Critical</option>
-      </select>
-      <select name="assigneeId">
-        <option value="">Unassigned</option>
-        <% users.forEach(user => { %>
-          <option value="<%= user.id %>"><%= user.name %></option>
-        <% }) %>
-      </select>
-      <input name="labels" placeholder="labels, comma, separated">
-      <input name="estimatePoints" placeholder="story points">
-    </div>
-    <button>Add to backlog</button>
-  </form>
-</section>
-<section class="board">
-  <% const columns = [['backlog','Backlog'],['progress','In Progress'],['done','Done']]; %>
-  <% columns.forEach(([key,label]) => { %>
-    <div class="column">
-      <h2><%= label %></h2>
-      <% tasks.filter(task => task.status === key).forEach(task => { %>
-        <article class="card task">
-          <h3><%= task.title %></h3>
-          <p><%= task.description %></p>
-          <small>Added by <%= task.author %> • Priority <%= task.priority %> • Assignee <%= task.assigneeName %></small>
-          <% if (task.labels && task.labels.length) { %>
-            <div class="meta-row">
-              <% task.labels.forEach(label => { %>
-                <span class="pill"><%= label %></span>
-              <% }) %>
-            </div>
+<p class="breadcrumb"><a href="/projects">Projects</a> / <%= project.name %></p>
+
+<section class="project-shell">
+  <div class="project-main">
+    <div class="issue-header">
+      <div>
+        <div class="keyline"><span class="project-key"><%= project.status %></span><span><%= project.priority %> priority</span></div>
+        <h1><%= project.name %></h1>
+        <p><%= project.description || 'No description provided.' %></p>
+        <div class="label-row">
+          <% if (project.labels && project.labels.length) { %>
+            <% project.labels.forEach(label => { %><span class="pill"><%= label %></span><% }) %>
+          <% } else { %>
+            <span class="pill muted-pill">No labels</span>
           <% } %>
-          <form method="post" action="/tasks/<%= task.id %>/status">
-            <select name="status" onchange="this.form.submit()">
-              <option value="backlog" <%= task.status==='backlog'?'selected':'' %>>Backlog</option>
-              <option value="progress" <%= task.status==='progress'?'selected':'' %>>In Progress</option>
-              <option value="done" <%= task.status==='done'?'selected':'' %>>Done</option>
-            </select>
-          </form>
-          <form method="post" action="/tasks/<%= task.id %>/delete">
-            <button class="danger small">Delete</button>
-          </form>
-        </article>
-      <% }) %>
+        </div>
+      </div>
+      <div class="status-panel">
+        <div class="status-item"><span>Status</span><strong><%= project.status %></strong></div>
+        <div class="status-item"><span>Priority</span><strong><%= project.priority %></strong></div>
+        <div class="status-item progress-item"><span>Progress</span><strong><%= project.progress %>%</strong><div class="progress"><i style="width:<%= project.progress || 0 %>%"></i></div></div>
+      </div>
     </div>
-  <% }) %>
+
+    <section class="board">
+      <% const columns = [['backlog','Backlog'],['progress','In Progress'],['done','Done']]; %>
+      <% columns.forEach(([key,label]) => { %>
+        <div class="column">
+          <div class="column-title"><h2><%= label %></h2><span><%= tasks.filter(task => task.status === key).length %></span></div>
+          <% tasks.filter(task => task.status === key).forEach(task => { %>
+            <article id="task-<%= task.id %>" class="card task">
+              <div class="task-topline"><h3><%= task.title %></h3><span class="priority priority-<%= task.priority %>"><%= task.priority %></span></div>
+              <p><%= task.description || 'No details added.' %></p>
+              <div class="task-facts">
+                <span>Assignee: <strong><%= task.assigneeName %></strong></span>
+                <span>Estimate: <strong><%= task.estimatePoints || '-' %></strong></span>
+                <span>Logged: <strong><%= Math.floor((task.timeSpentMinutes || 0) / 60) %>h <%= (task.timeSpentMinutes || 0) % 60 %>m</strong></span>
+              </div>
+              <% if (task.labels && task.labels.length) { %>
+                <div class="label-row compact">
+                  <% task.labels.forEach(label => { %><span class="pill"><%= label %></span><% }) %>
+                </div>
+              <% } %>
+              <div class="task-actions">
+                <form method="post" action="/tasks/<%= task.id %>/status">
+                  <select name="status" onchange="this.form.submit()">
+                    <option value="backlog" <%= task.status==='backlog'?'selected':'' %>>Backlog</option>
+                    <option value="progress" <%= task.status==='progress'?'selected':'' %>>In Progress</option>
+                    <option value="done" <%= task.status==='done'?'selected':'' %>>Done</option>
+                  </select>
+                </form>
+                <form method="post" action="/tasks/<%= task.id %>/assignee">
+                  <select name="assigneeId" onchange="this.form.submit()">
+                    <option value="" <%= !task.assigneeId?'selected':'' %>>Unassigned</option>
+                    <% users.forEach(user => { %>
+                      <option value="<%= user.id %>" <%= task.assigneeId===user.id?'selected':'' %>><%= user.name %></option>
+                    <% }) %>
+                  </select>
+                </form>
+              </div>
+              <form class="time-form" method="post" action="/tasks/<%= task.id %>/time">
+                <input type="number" min="1" name="minutes" placeholder="Minutes">
+                <input name="note" placeholder="Work note">
+                <button class="small">Log time</button>
+              </form>
+              <% if (task.timeLogs && task.timeLogs.length) { %>
+                <details class="time-log"><summary>Work log</summary>
+                  <% task.timeLogs.slice(-3).reverse().forEach(log => { %>
+                    <div><strong><%= log.minutes %>m</strong> by <%= log.author %><% if (log.note) { %> - <%= log.note %><% } %></div>
+                  <% }) %>
+                </details>
+              <% } %>
+              <form method="post" action="/tasks/<%= task.id %>/delete">
+                <button class="danger small">Delete</button>
+              </form>
+            </article>
+          <% }) %>
+        </div>
+      <% }) %>
+    </section>
+  </div>
+
+  <aside class="project-side">
+    <section class="card side-card">
+      <h2>Project details</h2>
+      <dl class="detail-list">
+        <div><dt>Owner</dt><dd><%= project.ownerName %></dd></div>
+        <div><dt>Assignee</dt><dd><%= project.assigneeName %></dd></div>
+        <div><dt>Milestone</dt><dd><%= project.milestone || 'None' %></dd></div>
+        <div><dt>Estimate</dt><dd><%= project.estimatePoints || '-' %></dd></div>
+        <div><dt>Start</dt><dd><%= project.startDate || '-' %></dd></div>
+        <div><dt>Due</dt><dd><%= project.dueDate || '-' %></dd></div>
+        <div><dt>Blocked</dt><dd><%= project.blockedReason || 'None' %></dd></div>
+      </dl>
+    </section>
+
+    <% if (isAdmin) { %>
+      <section class="card side-card admin-card">
+        <h2>Edit project</h2>
+        <form method="post" action="/projects/<%= project.id %>/update">
+          <label>Name<input name="name" value="<%= project.name %>" required></label>
+          <label>Description<textarea name="description" rows="3"><%= project.description %></textarea></label>
+          <label>Status<select name="status"><option value="planning" <%= project.status==='planning'?'selected':'' %>>Planning</option><option value="active" <%= project.status==='active'?'selected':'' %>>Active</option><option value="blocked" <%= project.status==='blocked'?'selected':'' %>>Blocked</option><option value="done" <%= project.status==='done'?'selected':'' %>>Done</option></select></label>
+          <label>Priority<select name="priority"><option value="low" <%= project.priority==='low'?'selected':'' %>>Low</option><option value="medium" <%= project.priority==='medium'?'selected':'' %>>Medium</option><option value="high" <%= project.priority==='high'?'selected':'' %>>High</option><option value="critical" <%= project.priority==='critical'?'selected':'' %>>Critical</option></select></label>
+          <label>Owner<select name="ownerId"><% users.forEach(user => { %><option value="<%= user.id %>" <%= project.ownerId===user.id?'selected':'' %>><%= user.name %></option><% }) %></select></label>
+          <label>Assignee<select name="assigneeId"><% users.forEach(user => { %><option value="<%= user.id %>" <%= project.assigneeId===user.id?'selected':'' %>><%= user.name %></option><% }) %></select></label>
+          <label>Labels<input name="labels" value="<%= project.labels ? project.labels.join(', ') : '' %>"></label>
+          <label>Milestone<input name="milestone" value="<%= project.milestone || '' %>"></label>
+          <label>Estimate<input name="estimatePoints" value="<%= project.estimatePoints || '' %>"></label>
+          <label>Start<input type="date" name="startDate" value="<%= project.startDate || '' %>"></label>
+          <label>Due<input type="date" name="dueDate" value="<%= project.dueDate || '' %>"></label>
+          <label>Progress<input type="number" min="0" max="100" name="progress" value="<%= project.progress || 0 %>"></label>
+          <label>Blocked reason<textarea name="blockedReason" rows="2"><%= project.blockedReason || '' %></textarea></label>
+          <button>Save</button>
+        </form>
+        <form method="post" action="/projects/<%= project.id %>/delete" onsubmit="return confirm('Delete this project, its tasks, and notes?')"><button class="danger">Delete project</button></form>
+      </section>
+    <% } %>
+
+    <section class="card side-card">
+      <h2>Add task</h2>
+      <form method="post" action="/projects/<%= project.id %>/tasks">
+        <label>Title<input name="title" required></label>
+        <label>Details<textarea name="description" rows="2"></textarea></label>
+        <label>Priority<select name="priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label>
+        <label>Assignee<select name="assigneeId"><option value="">Unassigned</option><% users.forEach(user => { %><option value="<%= user.id %>"><%= user.name %></option><% }) %></select></label>
+        <label>Labels<input name="labels" placeholder="frontend, blocked"></label>
+        <label>Estimate<input name="estimatePoints" placeholder="story points"></label>
+        <button>Add task</button>
+      </form>
+    </section>
+  </aside>
 </section>
+
 <section id="notes" class="notes">
   <h2>Shared private notes</h2>
   <div class="card form-card">
@@ -143,9 +145,7 @@
     <article class="card note">
       <div><strong><%= note.author %></strong><small><%= new Date(note.createdAt).toLocaleString() %></small></div>
       <p><%= note.body %></p>
-      <form method="post" action="/notes/<%= note.id %>/delete">
-        <button class="danger small">Delete</button>
-      </form>
+      <form method="post" action="/notes/<%= note.id %>/delete"><button class="danger small">Delete</button></form>
     </article>
   <% }) %>
 </section>

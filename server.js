@@ -34,7 +34,7 @@ app.use(session({
   }
 }));
 
-let db = { users: [], projects: [], tasks: [], notes: [] };
+let db = { users: [], projects: [], tasks: [], notes: [], timeLogs: [] };
 let writeQueue = Promise.resolve();
 
 const id = () => crypto.randomUUID();
@@ -476,6 +476,48 @@ app.post('/tasks/:taskId/status', requireAuth, async (req, res) => {
   res.redirect(`/projects/${task.projectId}`);
 });
 
+app.post('/tasks/:taskId/assignee', requireAuth, async (req, res) => {
+  const task = db.tasks.find(item => item.id === req.params.taskId);
+  if (!task || !projectForUser(task.projectId, currentUser(req))) {
+    return res.status(404).send('Task not found');
+  }
+
+  const nextAssigneeId = String(req.body.assigneeId || '');
+  if (nextAssigneeId && !activeUsers().some(user => user.id === nextAssigneeId)) {
+    return res.status(400).send('Invalid assignee');
+  }
+
+  task.assigneeId = nextAssigneeId;
+  task.updatedAt = now();
+  await saveDb();
+  res.redirect(`/projects/${task.projectId}#task-${task.id}`);
+});
+
+app.post('/tasks/:taskId/time', requireAuth, async (req, res) => {
+  const task = db.tasks.find(item => item.id === req.params.taskId);
+  if (!task || !projectForUser(task.projectId, currentUser(req))) {
+    return res.status(404).send('Task not found');
+  }
+
+  const minutes = Math.max(0, Math.round(Number(req.body.minutes || 0) || 0));
+  const note = String(req.body.note || '').trim();
+  if (minutes > 0) {
+    task.timeSpentMinutes = Number(task.timeSpentMinutes || 0) + minutes;
+    task.updatedAt = now();
+    db.timeLogs.push({
+      id: id(),
+      taskId: task.id,
+      projectId: task.projectId,
+      minutes,
+      note,
+      createdBy: req.session.userId,
+      createdAt: now()
+    });
+    await saveDb();
+  }
+
+  res.redirect(`/projects/${task.projectId}#task-${task.id}`);
+});
 app.post('/tasks/:taskId/delete', requireAuth, async (req, res) => {
   const task = db.tasks.find(item => item.id === req.params.taskId);
   if (!task || !projectForUser(task.projectId, currentUser(req))) {
@@ -552,3 +594,4 @@ loadDb()
     console.error(error);
     process.exit(1);
   });
+

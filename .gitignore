@@ -1,0 +1,7 @@
+node_modules/
+.env
+server.js.b64
+*.bak-*
+data/*.bak-*
+data/db.json
+npm-debug.log*
