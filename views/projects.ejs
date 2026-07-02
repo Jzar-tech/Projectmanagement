@@ -2,8 +2,8 @@
 <div class="topline">
   <div>
     <p class="eyebrow">Workspace dashboard</p>
-    <h1>Projects your teams can work on</h1>
-    <p>Admins decide which teams and direct members can access each project. Teammates see only the work assigned to them.</p>
+    <h1>Projects your departments can work on</h1>
+    <p>Admins decide which departments and direct members can access each project. Employees see only the work assigned to them.</p>
   </div>
 </div>
 
@@ -32,7 +32,7 @@
     </a>
   <% }) %>
   <% if (!projects.length) { %>
-    <div class="card muted-card"><strong>No projects available</strong><p>Ask an admin to add your team to a project.</p></div>
+    <div class="card muted-card"><strong>No projects available</strong><p>Ask an admin to add your department to a project.</p></div>
   <% } %>
 </section>
 
@@ -46,7 +46,7 @@
       <div class="form-row"><label>Milestone<input name="milestone"></label><label>Due date<input type="date" name="dueDate"></label></div>
       <label>Labels<input name="labels" placeholder="client, sprint-1, backend"></label>
       <div class="access-grid">
-        <fieldset><legend>Allowed teams</legend><% teams.forEach(team => { %><label class="check-row"><input type="checkbox" name="teamIds" value="<%= team.id %>"><span><%= team.name %></span></label><% }) %><% if (!teams.length) { %><p class="muted">Create teams first.</p><% } %></fieldset>
+        <fieldset><legend>Allowed departments</legend><% teams.forEach(team => { %><label class="check-row"><input type="checkbox" name="teamIds" value="<%= team.id %>"><span><%= team.name %></span></label><% }) %><% if (!teams.length) { %><p class="muted">Create departments first.</p><% } %></fieldset>
         <fieldset><legend>Direct members</legend><% users.forEach(member => { %><label class="check-row"><input type="checkbox" name="memberIds" value="<%= member.id %>"><span><%= member.name %></span></label><% }) %></fieldset>
       </div>
       <button>Create project</button>

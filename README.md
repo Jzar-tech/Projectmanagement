@@ -84,10 +84,10 @@ Use Win-ACME to issue a Let's Encrypt certificate, then add the generated HTTPS 
 
 The app now supports a Jira-style shared workspace:
 
-- Admins create users, teams, and projects.
-- Teams contain multiple employees and an optional team lead.
-- Projects can be assigned to one or more teams plus direct members.
-- Non-admin users only see projects where they are directly assigned or belong to an allowed team.
+- Admins create users, departments, and projects.
+- Departments contain multiple employees and an optional department head.
+- Projects can be assigned to one or more departments plus direct members.
+- Non-admin users only see projects where they are directly assigned or belong to an allowed department.
 - Tasks move through Backlog, In Progress, Review, and Done.
 - Each task supports assignee changes, priority, labels, estimates, time logging, and work notes.
 - Project notes are shared only with users who can access that project.
@@ -95,12 +95,12 @@ The app now supports a Jira-style shared workspace:
 Admin pages:
 
 - `/admin/users` manages employee accounts, roles, titles, departments, and disabled status.
-- `/admin/teams` manages teams, leads, and team membership.
+- `/admin/teams` manages departments, department heads, and department membership.
 - `/projects` lets admins create projects and assign access.
 
 ## Safe redeploy rule
 
-User, team, project, task, note, and time log data is stored in `data/db.json`. Code deployments must preserve:
+User, department, project, task, note, and time log data is stored in `data/db.json`. Code deployments must preserve:
 
 ```bash
 /home/deploy/projectmanagement/data

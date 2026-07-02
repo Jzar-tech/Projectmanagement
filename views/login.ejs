@@ -1,3 +1,3 @@
 <%- include('partials-header', { title: 'Login' }) %>
-<section class="auth card"><h1>Private Team Login</h1><% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %><form method="post" action="/login"><label>Email<input type="email" name="email" required></label><label>Password<input type="password" name="password" required></label><button>Login</button></form><p>New partner? <a href="/register">Register with invite code</a></p></section>
+<section class="auth card"><h1>Private Workspace Login</h1><% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %><form method="post" action="/login"><label>Email<input type="email" name="email" required></label><label>Password<input type="password" name="password" required></label><button>Login</button></form><p>New partner? <a href="/register">Register with invite code</a></p></section>
 <%- include('partials-footer') %>

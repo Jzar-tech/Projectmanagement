@@ -95,7 +95,7 @@
       <dl class="detail-list">
         <div><dt>Owner</dt><dd><%= project.ownerName %></dd></div>
         <div><dt>Assignee</dt><dd><%= project.assigneeName %></dd></div>
-        <div><dt>Teams</dt><dd><%= project.teamNames.length ? project.teamNames.join(', ') : 'Direct members only' %></dd></div>
+        <div><dt>Departments</dt><dd><%= project.teamNames.length ? project.teamNames.join(', ') : 'Direct members only' %></dd></div>
         <div><dt>Members</dt><dd><%= project.memberNames.length ? project.memberNames.join(', ') : '-' %></dd></div>
         <div><dt>Milestone</dt><dd><%= project.milestone || 'None' %></dd></div>
         <div><dt>Logged</dt><dd><%= Math.floor((project.loggedMinutes || 0) / 60) %>h <%= (project.loggedMinutes || 0) % 60 %>m</dd></div>
@@ -118,7 +118,7 @@
           <div class="task-edit-grid"><label>Start<input type="date" name="startDate" value="<%= project.startDate || '' %>"></label><label>Due<input type="date" name="dueDate" value="<%= project.dueDate || '' %>"></label></div>
           <label>Progress<input type="number" min="0" max="100" name="progress" value="<%= project.progress || 0 %>"></label>
           <label>Blocked reason<textarea name="blockedReason" rows="2"><%= project.blockedReason || '' %></textarea></label>
-          <fieldset><legend>Allowed teams</legend><div class="checkbox-cloud"><% teams.forEach(team => { %><label class="check-row"><input type="checkbox" name="teamIds" value="<%= team.id %>" <%= project.teamIds.includes(team.id)?'checked':'' %>><span><%= team.name %></span></label><% }) %></div></fieldset>
+          <fieldset><legend>Allowed departments</legend><div class="checkbox-cloud"><% teams.forEach(team => { %><label class="check-row"><input type="checkbox" name="teamIds" value="<%= team.id %>" <%= project.teamIds.includes(team.id)?'checked':'' %>><span><%= team.name %></span></label><% }) %></div></fieldset>
           <fieldset><legend>Direct members</legend><div class="checkbox-cloud"><% allUsers.forEach(member => { %><label class="check-row"><input type="checkbox" name="memberIds" value="<%= member.id %>" <%= project.memberIds.includes(member.id)?'checked':'' %>><span><%= member.name %></span></label><% }) %></div></fieldset>
           <button>Save project</button>
         </form>
