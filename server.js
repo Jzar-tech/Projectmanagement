@@ -420,6 +420,59 @@ app.post('/admin/users/:userId/role', requireAuth, requireAdmin, async (req, res
   res.redirect('/admin/users');
 });
 
+app.post('/admin/users/:userId/update', requireAuth, requireAdmin, async (req, res) => {
+  const user = db.users.find(item => item.id === req.params.userId);
+  if (!user) return res.status(404).send('User not found');
+
+  const name = String(req.body.name || '').trim();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const password = String(req.body.password || '');
+
+  if (!name || !email) {
+    return res.status(400).render('admin-users', {
+      users: db.users,
+      teams: db.teams,
+      error: 'Name and email are required.'
+    });
+  }
+
+  if (db.users.some(item => item.id !== user.id && item.email === email)) {
+    return res.status(409).render('admin-users', {
+      users: db.users,
+      teams: db.teams,
+      error: 'Another user already uses this email.'
+    });
+  }
+
+  if (user.id === req.session.userId && req.body.disabled === '1') {
+    return res.status(400).render('admin-users', {
+      users: db.users,
+      teams: db.teams,
+      error: 'You cannot disable your own admin account.'
+    });
+  }
+
+  user.name = name;
+  user.email = email;
+  user.role = req.body.role === 'admin' ? 'admin' : 'member';
+  user.title = String(req.body.title || '').trim();
+  user.department = String(req.body.department || '').trim();
+  user.disabled = req.body.disabled === '1';
+  if (password) {
+    if (password.length < 8) {
+      return res.status(400).render('admin-users', {
+        users: db.users,
+        teams: db.teams,
+        error: 'New password must be at least 8 characters.'
+      });
+    }
+    user.passwordHash = await bcrypt.hash(password, 12);
+  }
+  user.updatedAt = now();
+
+  await saveDb();
+  res.redirect('/admin/users');
+});
 app.post('/admin/users/:userId/toggle', requireAuth, requireAdmin, async (req, res) => {
   const user = db.users.find(item => item.id === req.params.userId);
   if (!user) return res.status(404).send('User not found');

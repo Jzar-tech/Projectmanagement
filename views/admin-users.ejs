@@ -1,5 +1,5 @@
 ﻿<%- include('partials-header', { title: 'Users' }) %>
-<div class="topline"><div><p class="eyebrow">Admin</p><h1>User management</h1><p>Create employee accounts, assign roles, and keep profile details available for task ownership.</p></div></div>
+<div class="topline"><div><p class="eyebrow">Admin</p><h1>User management</h1><p>Create employee accounts, edit profile details, reset passwords, and manage access status.</p></div></div>
 <% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %>
 <section class="card form-card">
   <h2>Create teammate</h2>
@@ -14,14 +14,23 @@
   <h2>Employees</h2>
   <div class="user-list">
     <% users.forEach(account => { %>
-      <div class="user-row">
-        <div><strong><%= account.name %></strong><span><%= account.email %></span><small><%= account.title || 'No title' %> <%= account.department ? '- ' + account.department : '' %> - <%= account.disabled ? 'Disabled' : 'Active' %></small></div>
-        <form method="post" action="/admin/users/<%= account.id %>/role">
-          <select name="role"><option value="member" <%= account.role === 'member' ? 'selected' : '' %>>Member</option><option value="admin" <%= account.role === 'admin' ? 'selected' : '' %>>Admin</option></select>
-          <input name="title" value="<%= account.title || '' %>" placeholder="Title">
-          <input name="department" value="<%= account.department || '' %>" placeholder="Department">
-          <button class="small">Save</button>
-        </form>
+      <div class="user-row user-row-expanded">
+        <div class="user-summary">
+          <strong><%= account.name %></strong>
+          <span><%= account.email %></span>
+          <small><%= account.title || 'No title' %> <%= account.department ? '- ' + account.department : '' %> - <%= account.disabled ? 'Disabled' : 'Active' %></small>
+          <div class="meta-row"><span class="pill"><%= account.role %></span><span class="pill <%= account.disabled ? 'muted-pill' : '' %>"><%= account.disabled ? 'Disabled' : 'Active' %></span></div>
+        </div>
+        <details class="edit-user">
+          <summary>Edit user</summary>
+          <form method="post" action="/admin/users/<%= account.id %>/update">
+            <div class="form-row"><label>Name<input name="name" value="<%= account.name %>" required></label><label>Email<input type="email" name="email" value="<%= account.email %>" required></label></div>
+            <div class="form-row"><label>Role<select name="role"><option value="member" <%= account.role === 'member' ? 'selected' : '' %>>Member</option><option value="admin" <%= account.role === 'admin' ? 'selected' : '' %>>Admin</option></select></label><label>Status<select name="disabled"><option value="0" <%= !account.disabled ? 'selected' : '' %>>Active</option><option value="1" <%= account.disabled ? 'selected' : '' %>>Disabled</option></select></label></div>
+            <div class="form-row"><label>Title<input name="title" value="<%= account.title || '' %>" placeholder="Title"></label><label>Department<input name="department" value="<%= account.department || '' %>" placeholder="Department"></label></div>
+            <label>Reset password<input type="password" name="password" minlength="8" placeholder="Leave blank to keep current password"></label>
+            <button class="small">Save user</button>
+          </form>
+        </details>
         <form method="post" action="/admin/users/<%= account.id %>/toggle"><button class="<%= account.disabled ? '' : 'danger' %> small"><%= account.disabled ? 'Enable' : 'Disable' %></button></form>
       </div>
     <% }) %>
