@@ -1,5 +1,5 @@
 ﻿<%- include('partials-header', { title: 'Users' }) %>
-<div class="topline"><div><p class="eyebrow">Admin</p><h1>User management</h1><p>Create employee accounts, edit profile details, reset passwords, and manage access status.</p></div></div>
+<div class="topline"><div><p class="eyebrow">Admin</p><h1>User management</h1><p>Create employee accounts, edit profile details, contact numbers, reset passwords, and manage access status.</p></div></div>
 <% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %>
 <section class="card form-card">
   <h2>Create teammate</h2>
@@ -7,6 +7,7 @@
     <div class="form-row"><label>Name<input name="name" required></label><label>Email<input type="email" name="email" required></label></div>
     <div class="form-row"><label>Temporary password<input type="password" name="password" minlength="8" required></label><label>Role<select name="role"><option value="member">Member</option><option value="admin">Admin</option></select></label></div>
     <div class="form-row"><label>Title<input name="title" placeholder="Frontend developer"></label><label>Department<input name="department" placeholder="Engineering"></label></div>
+    <label>Contact number<input name="contactNumber" placeholder="+1 555 0100"></label>
     <button>Create user</button>
   </form>
 </section>
@@ -18,7 +19,7 @@
         <div class="user-summary">
           <strong><%= account.name %></strong>
           <span><%= account.email %></span>
-          <small><%= account.title || 'No title' %> <%= account.department ? '- ' + account.department : '' %> - <%= account.disabled ? 'Disabled' : 'Active' %></small>
+          <small><%= account.title || 'No title' %> <%= account.department ? '- ' + account.department : '' %> <%= account.contactNumber ? '- ' + account.contactNumber : '' %> - <%= account.disabled ? 'Disabled' : 'Active' %></small>
           <div class="meta-row"><span class="pill"><%= account.role %></span><span class="pill <%= account.disabled ? 'muted-pill' : '' %>"><%= account.disabled ? 'Disabled' : 'Active' %></span></div>
         </div>
         <details class="edit-user">
@@ -27,6 +28,7 @@
             <div class="form-row"><label>Name<input name="name" value="<%= account.name %>" required></label><label>Email<input type="email" name="email" value="<%= account.email %>" required></label></div>
             <div class="form-row"><label>Role<select name="role"><option value="member" <%= account.role === 'member' ? 'selected' : '' %>>Member</option><option value="admin" <%= account.role === 'admin' ? 'selected' : '' %>>Admin</option></select></label><label>Status<select name="disabled"><option value="0" <%= !account.disabled ? 'selected' : '' %>>Active</option><option value="1" <%= account.disabled ? 'selected' : '' %>>Disabled</option></select></label></div>
             <div class="form-row"><label>Title<input name="title" value="<%= account.title || '' %>" placeholder="Title"></label><label>Department<input name="department" value="<%= account.department || '' %>" placeholder="Department"></label></div>
+            <label>Contact number<input name="contactNumber" value="<%= account.contactNumber || '' %>" placeholder="+1 555 0100"></label>
             <label>Reset password<input type="password" name="password" minlength="8" placeholder="Leave blank to keep current password"></label>
             <button class="small">Save user</button>
           </form>

@@ -1,0 +1,36 @@
+﻿<%- include('partials-header', { title: 'Account settings' }) %>
+<div class="topline">
+  <div>
+    <p class="eyebrow">My account</p>
+    <h1>Account settings</h1>
+    <p>Update your login email, contact number, and password.</p>
+  </div>
+</div>
+<% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %>
+<% if (typeof success !== 'undefined' && success) { %><p class="success"><%= success %></p><% } %>
+<section class="card form-card account-settings">
+  <form method="post" action="/account">
+    <div class="form-row">
+      <label>Name<input value="<%= account.name %>" disabled></label>
+      <label>Role<input value="<%= account.role %>" disabled></label>
+    </div>
+    <div class="form-row">
+      <label>Email<input type="email" name="email" value="<%= account.email %>" required></label>
+      <label>Contact number<input name="contactNumber" value="<%= account.contactNumber || '' %>" placeholder="+1 555 0100"></label>
+    </div>
+    <div class="form-row">
+      <label>Title<input value="<%= account.title || '' %>" disabled></label>
+      <label>Department<input value="<%= account.department || '' %>" disabled></label>
+    </div>
+    <hr>
+    <h2>Change password</h2>
+    <p class="muted">Leave these fields blank if you only want to update email or contact number.</p>
+    <label>Current password<input type="password" name="currentPassword" autocomplete="current-password"></label>
+    <div class="form-row">
+      <label>New password<input type="password" name="newPassword" minlength="8" autocomplete="new-password"></label>
+      <label>Confirm new password<input type="password" name="confirmPassword" minlength="8" autocomplete="new-password"></label>
+    </div>
+    <button>Save account</button>
+  </form>
+</section>
+<%- include('partials-footer') %>

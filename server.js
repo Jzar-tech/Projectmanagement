@@ -109,6 +109,7 @@ async function migrateDb() {
     }
     user.title ??= '';
     user.department ??= '';
+    user.contactNumber ??= '';
   });
 
   db.teams.forEach(team => {
@@ -365,6 +366,49 @@ app.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });
 
+
+app.get('/account', requireAuth, (req, res) => {
+  res.render('account', { account: currentUser(req), success: null });
+});
+
+app.post('/account', requireAuth, async (req, res) => {
+  const user = currentUser(req);
+  if (!user) return res.redirect('/login');
+
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const contactNumber = String(req.body.contactNumber || '').trim();
+  const currentPassword = String(req.body.currentPassword || '');
+  const newPassword = String(req.body.newPassword || '');
+  const confirmPassword = String(req.body.confirmPassword || '');
+
+  if (!email) {
+    return res.status(400).render('account', { account: user, success: null, error: 'Email is required.' });
+  }
+
+  if (db.users.some(item => item.id !== user.id && item.email === email)) {
+    return res.status(409).render('account', { account: user, success: null, error: 'Another account already uses this email.' });
+  }
+
+  if (newPassword || confirmPassword) {
+    if (!currentPassword || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      return res.status(400).render('account', { account: user, success: null, error: 'Current password is required to change password.' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).render('account', { account: user, success: null, error: 'New password must be at least 8 characters.' });
+    }
+    if (newPassword !== confirmPassword) {
+      return res.status(400).render('account', { account: user, success: null, error: 'New password and confirmation do not match.' });
+    }
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+  }
+
+  user.email = email;
+  user.contactNumber = contactNumber;
+  user.updatedAt = now();
+  await saveDb();
+  res.render('account', { account: user, success: 'Account updated.' });
+});
+
 app.get('/admin/users', requireAuth, requireAdmin, (req, res) => {
   res.render('admin-users', { users: db.users, teams: db.teams });
 });
@@ -376,6 +420,7 @@ app.post('/admin/users', requireAuth, requireAdmin, async (req, res) => {
   const role = req.body.role === 'admin' ? 'admin' : 'member';
   const title = String(req.body.title || '').trim();
   const department = String(req.body.department || '').trim();
+  const contactNumber = String(req.body.contactNumber || '').trim();
 
   if (!name || !email || password.length < 8) {
     return res.status(400).render('admin-users', {
@@ -400,6 +445,7 @@ app.post('/admin/users', requireAuth, requireAdmin, async (req, res) => {
     role,
     title,
     department,
+    contactNumber,
     disabled: false,
     passwordHash: await bcrypt.hash(password, 12),
     createdAt: now()
@@ -415,6 +461,7 @@ app.post('/admin/users/:userId/role', requireAuth, requireAdmin, async (req, res
   user.role = req.body.role === 'admin' ? 'admin' : 'member';
   user.title = String(req.body.title || '').trim();
   user.department = String(req.body.department || '').trim();
+  user.contactNumber = String(req.body.contactNumber || '').trim();
   user.updatedAt = now();
   await saveDb();
   res.redirect('/admin/users');
@@ -457,6 +504,7 @@ app.post('/admin/users/:userId/update', requireAuth, requireAdmin, async (req, r
   user.role = req.body.role === 'admin' ? 'admin' : 'member';
   user.title = String(req.body.title || '').trim();
   user.department = String(req.body.department || '').trim();
+  user.contactNumber = String(req.body.contactNumber || '').trim();
   user.disabled = req.body.disabled === '1';
   if (password) {
     if (password.length < 8) {
@@ -844,6 +892,7 @@ async function bootstrapAdmin() {
     role: 'admin',
     title: 'Workspace admin',
     department: 'Operations',
+    contactNumber: '',
     disabled: false,
     passwordHash: await bcrypt.hash(password, 12),
     createdAt: now()
