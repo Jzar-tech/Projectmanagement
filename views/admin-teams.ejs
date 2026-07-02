@@ -1,0 +1,27 @@
+﻿<%- include('partials-header', { title: 'Teams' }) %>
+<div class="topline"><div><p class="eyebrow">Admin</p><h1>Teams and access groups</h1><p>Create departments or delivery squads, assign members, then attach teams to projects.</p></div></div>
+<% if (typeof error !== 'undefined' && error) { %><p class="error"><%= error %></p><% } %>
+<section class="card form-card">
+  <h2>Create team</h2>
+  <form method="post" action="/admin/teams">
+    <div class="form-row"><label>Team name<input name="name" required></label><label>Team lead<select name="leadId"><option value="">No lead</option><% users.forEach(user => { %><option value="<%= user.id %>"><%= user.name %></option><% }) %></select></label></div>
+    <label>Description<textarea name="description" rows="2"></textarea></label>
+    <fieldset><legend>Members</legend><div class="checkbox-cloud"><% users.forEach(user => { %><label class="check-row"><input type="checkbox" name="memberIds" value="<%= user.id %>"><span><%= user.name %></span></label><% }) %></div></fieldset>
+    <button>Create team</button>
+  </form>
+</section>
+<section class="team-list">
+  <% teams.forEach(team => { %>
+    <article class="card team-card">
+      <div class="team-heading"><div><h2><%= team.name %></h2><p><%= team.description || 'No description' %></p></div><span class="pill"><%= team.projectCount %> projects</span></div>
+      <form method="post" action="/admin/teams/<%= team.id %>/update">
+        <div class="form-row"><label>Name<input name="name" value="<%= team.name %>" required></label><label>Lead<select name="leadId"><option value="">No lead</option><% users.forEach(user => { %><option value="<%= user.id %>" <%= team.leadId===user.id?'selected':'' %>><%= user.name %></option><% }) %></select></label></div>
+        <label>Description<textarea name="description" rows="2"><%= team.description || '' %></textarea></label>
+        <fieldset><legend>Members</legend><div class="checkbox-cloud"><% users.forEach(user => { %><label class="check-row"><input type="checkbox" name="memberIds" value="<%= user.id %>" <%= team.memberIds.includes(user.id)?'checked':'' %>><span><%= user.name %></span></label><% }) %></div></fieldset>
+        <button class="small">Save team</button>
+      </form>
+      <form method="post" action="/admin/teams/<%= team.id %>/delete" onsubmit="return confirm('Delete this team? Projects will keep direct member access.')"><button class="danger small">Delete team</button></form>
+    </article>
+  <% }) %>
+</section>
+<%- include('partials-footer') %>

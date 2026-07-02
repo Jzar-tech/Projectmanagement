@@ -79,3 +79,33 @@ Use Win-ACME to issue a Let's Encrypt certificate, then add the generated HTTPS 
 - Use HTTPS.
 - Back up `data\db.json` daily.
 - This starter uses the default in-memory session store, which is acceptable for one small app instance. For larger usage, replace it with Redis or a persistent session store.
+
+## Production workspace model
+
+The app now supports a Jira-style shared workspace:
+
+- Admins create users, teams, and projects.
+- Teams contain multiple employees and an optional team lead.
+- Projects can be assigned to one or more teams plus direct members.
+- Non-admin users only see projects where they are directly assigned or belong to an allowed team.
+- Tasks move through Backlog, In Progress, Review, and Done.
+- Each task supports assignee changes, priority, labels, estimates, time logging, and work notes.
+- Project notes are shared only with users who can access that project.
+
+Admin pages:
+
+- `/admin/users` manages employee accounts, roles, titles, departments, and disabled status.
+- `/admin/teams` manages teams, leads, and team membership.
+- `/projects` lets admins create projects and assign access.
+
+## Safe redeploy rule
+
+User, team, project, task, note, and time log data is stored in `data/db.json`. Code deployments must preserve:
+
+```bash
+/home/deploy/projectmanagement/data
+/home/deploy/projectmanagement/.env
+/home/deploy/projectmanagement/logs
+```
+
+Replacing code files is safe as long as `data/db.json` is not deleted. The current deploy process keeps `data/` and `.env` untouched.

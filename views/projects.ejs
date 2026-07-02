@@ -1,37 +1,56 @@
-<%- include('partials-header', { title: 'Projects' }) %>
+﻿<%- include('partials-header', { title: 'Projects' }) %>
 <div class="topline">
   <div>
-    <h1>Shared Projects</h1>
-    <p>One workspace for the team. Admin-created projects are visible to every active teammate.</p>
+    <p class="eyebrow">Workspace dashboard</p>
+    <h1>Projects your teams can work on</h1>
+    <p>Admins decide which teams and direct members can access each project. Teammates see only the work assigned to them.</p>
   </div>
 </div>
+
+<section class="stats-grid">
+  <div class="stat-card"><span>Projects</span><strong><%= stats.projects %></strong></div>
+  <div class="stat-card"><span>Total tasks</span><strong><%= stats.totalTasks %></strong></div>
+  <div class="stat-card"><span>Open tasks</span><strong><%= stats.openTasks %></strong></div>
+  <div class="stat-card"><span>Completed</span><strong><%= stats.completedTasks %></strong></div>
+</section>
+
 <section class="grid">
   <% projects.forEach(project => { %>
     <a class="card project-card" href="/projects/<%= project.id %>">
-      <h2><%= project.name %></h2>
+      <div class="project-card-head">
+        <h2><%= project.name %></h2>
+        <span class="priority priority-<%= project.priority %>"><%= project.priority %></span>
+      </div>
       <p><%= project.description || 'No description' %></p>
+      <div class="progress"><i style="width:<%= project.completionRate || project.progress || 0 %>%"></i></div>
       <div class="meta-row">
         <span class="pill"><%= project.status %></span>
-        <span class="pill"><%= project.priority %></span>
+        <% project.teamNames.slice(0, 3).forEach(team => { %><span class="pill"><%= team %></span><% }) %>
+        <% if (!project.teamNames.length) { %><span class="pill muted-pill">Direct members</span><% } %>
       </div>
       <small><%= project.taskCount %> tasks - <%= project.openCount %> open - Owner: <%= project.ownerName %></small>
     </a>
   <% }) %>
+  <% if (!projects.length) { %>
+    <div class="card muted-card"><strong>No projects available</strong><p>Ask an admin to add your team to a project.</p></div>
+  <% } %>
 </section>
+
 <% if (isAdmin) { %>
   <section class="card form-card">
     <h2>Create project</h2>
     <form method="post" action="/projects">
-      <label>Project name<input name="name" required></label>
+      <div class="form-row"><label>Project name<input name="name" required></label><label>Priority<select name="priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option></select></label></div>
       <label>Description<textarea name="description" rows="3"></textarea></label>
-      <button>Create shared project</button>
+      <div class="form-row"><label>Owner<select name="ownerId"><% users.forEach(user => { %><option value="<%= user.id %>"><%= user.name %></option><% }) %></select></label><label>Assignee<select name="assigneeId"><% users.forEach(user => { %><option value="<%= user.id %>"><%= user.name %></option><% }) %></select></label></div>
+      <div class="form-row"><label>Milestone<input name="milestone"></label><label>Due date<input type="date" name="dueDate"></label></div>
+      <label>Labels<input name="labels" placeholder="client, sprint-1, backend"></label>
+      <div class="access-grid">
+        <fieldset><legend>Allowed teams</legend><% teams.forEach(team => { %><label class="check-row"><input type="checkbox" name="teamIds" value="<%= team.id %>"><span><%= team.name %></span></label><% }) %><% if (!teams.length) { %><p class="muted">Create teams first.</p><% } %></fieldset>
+        <fieldset><legend>Direct members</legend><% users.forEach(member => { %><label class="check-row"><input type="checkbox" name="memberIds" value="<%= member.id %>"><span><%= member.name %></span></label><% }) %></fieldset>
+      </div>
+      <button>Create project</button>
     </form>
-  </section>
-<% } else { %>
-  <section class="card muted-card">
-    <strong>Shared workspace mode</strong>
-    <p>Team members can add tasks and notes inside shared projects. Only admins can create or edit projects.</p>
   </section>
 <% } %>
 <%- include('partials-footer') %>
-

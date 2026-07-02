@@ -1,1 +1,26 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><%= title %></title><link rel="stylesheet" href="/style.css"></head><body><header><a href="/projects"><strong>Team Notes Board</strong></a><% if (user) { %><div><% if (isAdmin) { %><a href="/admin/users">Users</a><% } %><span><%= user.name %> <small class="role"><%= user.role %></small></span><form method="post" action="/logout" class="inline"><button class="link">Logout</button></form></div><% } %></header><main>
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <a href="/projects" class="brand"><strong>Project Management</strong><span>Jzar workspace</span></a>
+  <% if (user) { %>
+    <nav>
+      <a href="/projects">Projects</a>
+      <% if (isAdmin) { %>
+        <a href="/admin/teams">Teams</a>
+        <a href="/admin/users">Users</a>
+      <% } %>
+    </nav>
+    <div class="account-bar">
+      <span><%= user.name %> <small class="role"><%= user.role %></small></span>
+      <form method="post" action="/logout" class="inline"><button class="link">Logout</button></form>
+    </div>
+  <% } %>
+</header>
+<main>
